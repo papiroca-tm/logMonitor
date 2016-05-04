@@ -14,3 +14,7 @@ GET     /public/*filepath                       Static.Serve("public")
 
 # Catch all
 *       /:controller/:action                    :controller.:action
+
+# logMonitor
+GET	/logmonitor									LogMonitor.Index
+GET	/logmonitor/getlogs/:dt     		        LogMonitor.GetLogs

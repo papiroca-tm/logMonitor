@@ -1,0 +1,13 @@
+<!DOCTYPE html>
+<html>    
+    {{set . "title" "LogMonitor"}}
+    <!--/public/js/...-->
+    {{append . "moreScripts" "jquery-1.9.1.min.js"}}
+    {{append . "moreScripts" "logMonitor.js"}}         
+    <!--/public/css/...-->
+    {{append . "moreStyles" "style.css"}}
+    {{template "LogMonitor/Header.html" .}}   
+    <body>
+                
+    </body>
+</html>

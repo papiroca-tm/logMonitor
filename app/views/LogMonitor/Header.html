@@ -1,0 +1,23 @@
+<head>
+    <title>{{.title}}</title>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+    <meta name="viewport" content="width=device-width, height=device-height, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0, user-scalable=no">
+    
+    <link rel="shortcut icon" type="image/png" href="/public/img/favicon.png">
+    <!--webix-->
+    <script src="/public/lib/codebase/webix.js" type="text/javascript" charset="utf-8"></script>
+    <link rel="stylesheet" type="text/css" href="/public/lib/codebase/webix.css" media="screen">
+    
+    {{range .moreStyles}}
+        <link rel="stylesheet" type="text/css" href="/public/css/{{.}}">
+    {{end}}
+    {{range .moreScripts}}
+        <script src="/public/js/{{.}}" type="text/javascript" charset="utf-8"></script>
+    {{end}}   
+    
+    <script>
+        $(document).ready(function() {
+            onDocumentReady();      
+        });
+    </script>
+</head>

@@ -1,6 +1,9 @@
 package app
 
-import "github.com/revel/revel"
+import (
+	"github.com/revel/revel"
+	logit "logMonitor/app/services/logMonitor"
+)
 
 func init() {
 	// Filters is the default set of global filters.
@@ -18,10 +21,10 @@ func init() {
 		revel.CompressFilter,          // Compress the result.
 		revel.ActionInvoker,           // Invoke the action.
 	}
-
+	
 	// register startup functions with OnAppStart
 	// ( order dependent )
-	// revel.OnAppStart(InitDB)
+	revel.OnAppStart(initLogit)
 	// revel.OnAppStart(FillCache)
 }
 
@@ -35,4 +38,8 @@ var HeaderFilter = func(c *revel.Controller, fc []revel.Filter) {
 	c.Response.Out.Header().Add("X-Content-Type-Options", "nosniff")
 
 	fc[0](c, fc[1:]) // Execute the next filter stage.
+}
+
+func initLogit() {
+	logit.Config()
 }

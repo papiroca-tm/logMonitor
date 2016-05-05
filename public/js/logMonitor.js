@@ -39,30 +39,33 @@ function onDocumentReady () {
 var LogMonitor = function () {    
     
     var THIS_NAME = config.moduleName;
-    var THIS_VERSION = config.moduleVer;    
-    this.getThisName = function () { return THIS_NAME; };    
+    var THIS_VERSION = config.moduleVer; 
+       
+    this.getThisName = function () { return THIS_NAME; }; 
+       
     this.getThisVersion = function () { return THIS_VERSION; };
     
-    this.init = function () {
-        
+    this.init = function () { 
+               
         console.log(THIS_NAME,'init');
-        
+                
         console.log(THIS_NAME,'setup webix locale to', config.webixLocale);
         webix.i18n.setLocale(config.webixLocale);
-        
+                
         console.log(THIS_NAME,'init views');
         this.views = new Views();
+        
         console.log(THIS_NAME,'show DOM');
         webix.ui(this.views.getCompletedDOM());
-        
+                
         console.log(THIS_NAME,'setup datepickers');        
 		var dt = new Date();
 		$$(config.datePickerEndID).setValue(dt);
 		dt.setHours(dt.getHours() - 1);
-		$$(config.datePickerStartID).setValue(dt);        
-        
+		$$(config.datePickerStartID).setValue(dt);
+                
         console.log(THIS_NAME,'init RestApiControler');
-        this.restApiCtrl = new RestApiControler(this);		 		
+        this.restApiCtrl = new RestApiControler(this); 		
     
     };	    
 

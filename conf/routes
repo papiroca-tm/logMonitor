@@ -17,4 +17,4 @@ GET     /public/*filepath                       Static.Serve("public")
 
 # logMonitor
 GET	/logmonitor									LogMonitor.Index
-GET	/logmonitor/getlogs/:dt     		        LogMonitor.GetLogs
+GET	/logmonitor/getlogs/     		            LogMonitor.GetLogs

@@ -18,6 +18,11 @@ func (c LogMonitor) Index() revel.Result {
 
 // GetLogs ...
 func (c LogMonitor) GetLogs() revel.Result {
-	logit.INFO("get-запрос на GetLogs монитора логов", "просмотр логов", "")
-	return c.RenderJson(logit.Get())
+		
+	logit.INFO("get-запрос на GetLogs монитора логов", "просмотр логов", "")	
+	params := make(map[string]interface{})
+	params["dtStart"] = c.Params.Get("dtStart")
+	params["dtEnd"] = c.Params.Get("dtEnd")	
+	
+	return c.RenderJson(logit.Get(params))
 }

@@ -12,7 +12,7 @@ var config = {
     toolBarID: 'mainToolbar',
     datePickerStartID: 'datePickerStartID',
     datePickerEndID: 'datePickerEndID',
-    datePickerFormat: "%d.%m.%Y %H:%i:%s",
+    datePickerFormat: '%d.%m.%Y %H:%i:%s',
     
     dataListID: 'logDataList',
     dataListColums: [
@@ -27,48 +27,27 @@ var config = {
         { id : "log_type", header : ["Тип лога", {content:"selectFilter"}], adjust: "header", editor:"text"},
         { id : "err_code", header : ["код ошибки", {content:"textFilter"}], adjust: "header", editor:"text"},
     ],
-};
-
-function onDocumentReady () {    
-    var lm = new LogMonitor();
-    console.log(lm.getThisName() + ' ver:' + lm.getThisVersion());
-    lm.init();
-    lm.restApiCtrl.get('/logmonitor/getlogs/');
+    
+    btnRequestID: 'btnRequest',
+    btnSqlID: "btnSql",
 };
 
 var LogMonitor = function () {    
     
     var THIS_NAME = config.moduleName;
-    var THIS_VERSION = config.moduleVer; 
-       
-    this.getThisName = function () { return THIS_NAME; }; 
-       
-    this.getThisVersion = function () { return THIS_VERSION; };
+    var THIS_VERSION = config.moduleVer;       
+    this.getThisName = function () { return THIS_NAME; };        
+    this.getThisVersion = function () { return THIS_VERSION; };   
     
-    this.init = function () { 
-               
-        console.log(THIS_NAME,'init');
-                
-        console.log(THIS_NAME,'setup webix locale to', config.webixLocale);
+    this.init = function () {        
         webix.i18n.setLocale(config.webixLocale);
-                
-        console.log(THIS_NAME,'init views');
         this.views = new Views();
-        
-        console.log(THIS_NAME,'show DOM');
-        webix.ui(this.views.getCompletedDOM());
-                
-        console.log(THIS_NAME,'setup datepickers');        
+        webix.ui(this.views.getCompletedDOM());               
 		var dt = new Date();
 		$$(config.datePickerEndID).setValue(dt);
 		dt.setHours(dt.getHours() - 1);
-		$$(config.datePickerStartID).setValue(dt);
-                
-        console.log(THIS_NAME,'init RestApiControler');
-        this.restApiCtrl = new RestApiControler(this); 		
-    
-    };	    
-
+		$$(config.datePickerStartID).setValue(dt);                
+    };
 };
 
 var RestApiControler = function (master, host, port) {
@@ -85,6 +64,7 @@ var RestApiControler = function (master, host, port) {
             url: url,
             success: function (data, textStatus, jqXHR) {
                 var dataList = master.views.getDataListID();
+                $$(dataList).clearAll();
                 $$(dataList).parse(data);                
             },
             error: function (jqXHR, textStatus, errorThown) {
@@ -117,7 +97,8 @@ var Views = function () {
                 format: webix.Date.dateToStr(config.datePickerFormat), 
                 timepicker : true, width : 200, align : "left" 
             },
-            { view : "button", id : "my_button", value : "SQL-запрос", inputWidth : 180, align: "right" }
+            { view : "button", id : config.btnRequestID, value : "сформировать", inputWidth : 180, align: "left" },
+            { view : "button", id : config.btnSqlID, value : "SQL-запрос", inputWidth : 180, align: "right" }
         ]
     };
     
@@ -144,5 +125,29 @@ var Views = function () {
     };
         
 };
+
+var lm = new LogMonitor();
+var restApiCtrl = new RestApiControler(lm);
+
+function onDocumentReady () {    
+    console.log(lm.getThisName() + ' ver:' + lm.getThisVersion());    
+    lm.init();
+    bildHandlers();
+};
+
+function btnRequestClick () {
+    var dtStart = $$(config.datePickerStartID).getText();
+    var dtEnd = $$(config.datePickerEndID).getText();
+    var url = '/logmonitor/getlogs/' + '?dtStart='+ dtStart + '&dtEnd=' + dtEnd;
+    restApiCtrl.get(url);
+};
+    
+function bildHandlers () {
+    $$(config.btnRequestID).attachEvent("onItemClick", btnRequestClick);    
+};
+
+
+
+
 
 

@@ -5,6 +5,7 @@ import (
     "database/sql"
 	"runtime"
 	"strings"
+	"time"
 	//_ "github.com/lib/pq"
     //"fmt"
 )
@@ -24,7 +25,6 @@ var insertQuery = `INSERT INTO logs (
 
 // Config ...
 func Config() {
-    revel.INFO.Println("config start")
 	/*
 	* todo чтение конфига подключения к базе данных из JSON файла конфига
 	*/
@@ -45,7 +45,6 @@ func Config() {
 			CONSTRAINT "первичный ключ" PRIMARY KEY (pk_id)
 		) WITH (OIDS=FALSE);`)
 	checkErr(err)
-    revel.INFO.Println("config end")
 }
 
 func checkErr(err error) {
@@ -54,9 +53,32 @@ func checkErr(err error) {
         //panic(err)
     }
 }
+
+func strToTime (s string) time.Time {
+	t, err := time.Parse("02.01.2006 15:04:05", s)
+	checkErr(err)
+	return t
+}
+
+func timeToDbStr (t time.Time) string {
+	return t.Format("2006-01-02 15:04:05.999999999")
+}
+
+func timeToStr (t time.Time) string {
+	return t.Format("02.01.2006 15:04:05")
+}
 					
 // Get ... todo
-func Get() (data string) {
+func Get(params map[string]interface{}) (data string) {
+	
+	var dttmStart, dttmEnd time.Time	
+	
+	dttmStart = strToTime(params["dtStart"].(string))
+	dttmEnd = strToTime(params["dtEnd"].(string))
+		
+	println("dtStart:", timeToStr(dttmStart))
+	println("dtEnd:", timeToStr(dttmEnd))	
+	
 	openDB()
 	query := `SELECT 
                     pk_id, 
@@ -69,7 +91,8 @@ func Get() (data string) {
                     log_text, 
                     log_type,
                     err_code 
-              FROM public.logs`
+              FROM public.logs
+			  WHERE (time_stamp BETWEEN '` + timeToDbStr(dttmStart) + `' AND '` + timeToDbStr(dttmEnd) + `')`
                     
     rows, err := db.Query("SELECT array_to_json(ARRAY_AGG(row_to_json(row))) FROM (" + query + ") row")
 	defer rows.Close()

@@ -76,9 +76,6 @@ func Get(params map[string]interface{}) (data string) {
 	dttmStart = strToTime(params["dtStart"].(string))
 	dttmEnd = strToTime(params["dtEnd"].(string))
 		
-	println("dtStart:", timeToStr(dttmStart))
-	println("dtEnd:", timeToStr(dttmEnd))	
-	
 	openDB()
 	query := `SELECT 
                     pk_id, 

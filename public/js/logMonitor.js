@@ -98,7 +98,7 @@ var Views = function () {
                 timepicker : true, width : 200, align : "left" 
             },
             { view : "button", id : config.btnRequestID, value : "сформировать", inputWidth : 180, align: "left" },
-            { view : "button", id : config.btnSqlID, value : "SQL-запрос", inputWidth : 180, align: "right" }
+            //{ view : "button", id : config.btnSqlID, value : "SQL-запрос", inputWidth : 180, align: "right" }
         ]
     };
     

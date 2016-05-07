@@ -5,6 +5,7 @@ import (
     "database/sql"
 	"runtime"
 	"strings"
+	"strconv"
 	"time"
 	"os"
 	"encoding/json"
@@ -202,6 +203,11 @@ func getFuncName() string {
 	functionObject := runtime.FuncForPC(pc)
 	arr := strings.Split(functionObject.Name(), ".")
 	return arr[len(arr)-1]
+}
+
+func getLine() string {
+	_, _, line, _ := runtime.Caller(settings.StackLevel)
+	return strconv.Itoa(line)
 }
 
 func openDB() (err error) {

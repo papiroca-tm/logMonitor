@@ -2,7 +2,7 @@ package app
 
 import (
 	"github.com/revel/revel"
-	logit "logMonitor/app/services/logMonitor"
+	//logit "logMonitor/app/services/logMonitor"
 )
 
 func init() {
@@ -24,7 +24,7 @@ func init() {
 	
 	// register startup functions with OnAppStart
 	// ( order dependent )
-	revel.OnAppStart(initLogit)
+	//revel.OnAppStart(initLogit)
 	// revel.OnAppStart(FillCache)
 }
 
@@ -40,6 +40,6 @@ var HeaderFilter = func(c *revel.Controller, fc []revel.Filter) {
 	fc[0](c, fc[1:]) // Execute the next filter stage.
 }
 
-func initLogit() {
-	logit.Config()
-}
+// func initLogit() {
+// 	logit.Config()
+// }

@@ -1,0 +1,12 @@
+{
+    "DateTimeFormatString": "02.01.2006 15:04:05",
+	"DbDateTimeFormatString":  "2006-01-02 15:04:05.999999999",    
+	"StackLevel": 2,    
+	"DbDriver": "postgres",
+    "DbUser": "postgres",
+    "DbUserPassword": "js110682msm",
+    "DbHost": "localhost",
+    "DbPort": "5432",
+    "DbName": "workHelper",
+    "Sslmode": "disable"
+}

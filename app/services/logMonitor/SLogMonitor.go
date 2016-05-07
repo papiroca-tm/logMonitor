@@ -6,9 +6,23 @@ import (
 	"runtime"
 	"strings"
 	"time"
+	"os"
+	"encoding/json"
 	//_ "github.com/lib/pq"
-    //"fmt"
 )
+
+var settings struct {
+    DateTimeFormatString  string
+	DbDateTimeFormatString  string
+	StackLevel int
+	DbDriver string // "postgres"
+	DbUser string
+    DbUserPassword string
+    DbHost string
+    DbPort string
+    DbName string
+    Sslmode string	
+}
 
 var db *sql.DB
 var insertQuery = `INSERT INTO logs (
@@ -25,12 +39,17 @@ var insertQuery = `INSERT INTO logs (
 
 // Config ...
 func Config() {
-	/*
-	* todo чтение конфига подключения к базе данных из JSON файла конфига
-	*/
+	
+	// чтение конфига подключения к базе данных из JSON файла конфига
+	configFile, err := os.Open("app/services/logMonitor/config.json")
+    checkErr(err)
+    jsonParser := json.NewDecoder(configFile)
+    err = jsonParser.Decode(&settings)
+	checkErr(err)
+	
 	openDB()
 	defer closeDB()
-	_, err := db.Query(
+	_, err = db.Query(
 		`CREATE TABLE IF NOT EXISTS public.logs (
 			pk_id serial,
 			time_stamp timestamp without time zone,
@@ -55,17 +74,17 @@ func checkErr(err error) {
 }
 
 func strToTime (s string) time.Time {
-	t, err := time.Parse("02.01.2006 15:04:05", s)
+	t, err := time.Parse(settings.DateTimeFormatString, s)
 	checkErr(err)
 	return t
 }
 
 func timeToDbStr (t time.Time) string {
-	return t.Format("2006-01-02 15:04:05.999999999")
+	return t.Format(settings.DbDateTimeFormatString)
 }
 
 func timeToStr (t time.Time) string {
-	return t.Format("02.01.2006 15:04:05")
+	return t.Format(settings.DateTimeFormatString)
 }
 					
 // Get ... todo
@@ -151,7 +170,7 @@ func getAppName() string {
 }
 
 func getPkgName() string {
-	pc, _, _, _ := runtime.Caller(2)
+	pc, _, _, _ := runtime.Caller(settings.StackLevel)
 	functionObject := runtime.FuncForPC(pc)
 	arr := strings.Split(functionObject.Name(), ".")
 	sPkg := strings.Split(arr[0], "/")
@@ -159,21 +178,27 @@ func getPkgName() string {
 }
 
 func getModuleName() string {
-	_, modulePathName, _, _ := runtime.Caller(2)
+	_, modulePathName, _, _ := runtime.Caller(settings.StackLevel)
 	sModule := strings.Split(modulePathName, "/")
 	return sModule[len(sModule)-1]
 }
 
 func getFuncName() string {
-	pc, _, _, _ := runtime.Caller(2)
+	pc, _, _, _ := runtime.Caller(settings.StackLevel)
 	functionObject := runtime.FuncForPC(pc)
 	arr := strings.Split(functionObject.Name(), ".")
 	return arr[len(arr)-1]
 }
 
 func openDB() (err error) {
-	driver := revel.Config.StringDefault("db.user", "postgres")
-	connectString := revel.Config.StringDefault("db.spec", "")
+	driver := settings.DbDriver
+	connectString := settings.DbDriver + "://"
+	connectString += settings.DbUser + ":"
+	connectString += settings.DbUserPassword + "@"
+	connectString += settings.DbHost + ":"
+	connectString += settings.DbPort + "/"
+	connectString += settings.DbName
+	connectString += "?sslmode=" + settings.Sslmode	
 	db, err = sql.Open(driver, connectString)
 	if err != nil {
 		revel.ERROR.Println("DB open Error", err)

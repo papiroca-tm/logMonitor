@@ -8,5 +8,7 @@
     "DbHost": "localhost",
     "DbPort": "5432",
     "DbName": "workHelper",
+    "DbShema": "logs",
+    "DbTable": "logs",
     "Sslmode": "disable"
 }

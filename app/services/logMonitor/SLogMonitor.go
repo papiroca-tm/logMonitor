@@ -8,34 +8,27 @@ import (
 	"time"
 	"os"
 	"encoding/json"
-	//_ "github.com/lib/pq"
+	//
+	_ "github.com/lib/pq"
 )
 
 var settings struct {
     DateTimeFormatString  string
 	DbDateTimeFormatString  string
 	StackLevel int
-	DbDriver string // "postgres"
+	DbDriver string
 	DbUser string
     DbUserPassword string
     DbHost string
     DbPort string
     DbName string
+	DbShema string
+	DbTable string
     Sslmode string	
 }
 
 var db *sql.DB
-var insertQuery = `INSERT INTO logs (
-						time_stamp, 
-						app_name, 
-						pkg_name, 
-						module_name, 
-						proc_name, 
-						log_context, 
-						log_text, 
-						log_type,
-						err_code
-					) VALUES (NOW(), $1, $2, $3, $4, $5, $6, $7, $8);`
+var insertQuery string
 
 // Config ...
 func Config() {
@@ -47,10 +40,31 @@ func Config() {
     err = jsonParser.Decode(&settings)
 	checkErr(err)
 	
+	insertQuery= `INSERT INTO ` + settings.DbShema + `.` + settings.DbTable + ` (
+						time_stamp, 
+						app_name, 
+						pkg_name, 
+						module_name, 
+						proc_name, 
+						log_context, 
+						log_text, 
+						log_type,
+						err_code
+					) VALUES (NOW(), $1, $2, $3, $4, $5, $6, $7, $8);`
+	
 	openDB()
 	defer closeDB()
+	
 	_, err = db.Query(
-		`CREATE TABLE IF NOT EXISTS public.logs (
+		`CREATE SCHEMA IF NOT EXISTS ` + settings.DbShema + ` 
+			AUTHORIZATION ` + settings.DbUser + `;
+			GRANT ALL ON SCHEMA ` + settings.DbShema + ` TO ` + settings.DbUser + `;
+			COMMENT ON SCHEMA ` + settings.DbShema + `
+			IS 'standard logs schema';`)
+	checkErr(err)	
+	
+	_, err = db.Query(
+		`CREATE TABLE IF NOT EXISTS ` + settings.DbShema + `.` + settings.DbTable + ` (
 			pk_id serial,
 			time_stamp timestamp without time zone,
 			app_name character varying(50),
@@ -107,7 +121,7 @@ func Get(params map[string]interface{}) (data string) {
                     log_text, 
                     log_type,
                     err_code 
-              FROM public.logs
+              FROM ` + settings.DbShema + `.` + settings.DbTable + ` 
 			  WHERE (time_stamp BETWEEN '` + timeToDbStr(dttmStart) + `' AND '` + timeToDbStr(dttmEnd) + `')`
                     
     rows, err := db.Query("SELECT array_to_json(ARRAY_AGG(row_to_json(row))) FROM (" + query + ") row")
@@ -130,7 +144,7 @@ func Get(params map[string]interface{}) (data string) {
 func INFO(logText, logContext, errCode string) {
 	revel.INFO.Println(logText, logContext, errCode)
 	openDB()
-	defer closeDB()	
+	defer closeDB()
 	query, err := db.Prepare(insertQuery)
 	_, err = query.Exec(getAppName(), getPkgName(), getModuleName(), getFuncName(), logContext, logText, "INFO", "")	
 	checkErr(err)

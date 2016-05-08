@@ -35,7 +35,9 @@ var insertQuery string
 func Config() {
 	
 	// чтение конфига подключения к базе данных из JSON файла конфига
-	configFile, err := os.Open("app/services/logMonitor/config.json")
+	dir, err := os.Getwd()
+	checkErr(err)
+	configFile, err := os.Open(dir + "/app/services/logMonitor/config.json")
     checkErr(err)
     jsonParser := json.NewDecoder(configFile)
     err = jsonParser.Decode(&settings)

@@ -2,19 +2,11 @@
 
 var config = {
     moduleName: 'logMonitor',
-    moduleVer: '0.0.1',
-    
+    moduleVer: '0.0.1',    
     defaultHost: 'localhost',
-    defaultPort: '9000',
-    
-    webixLocale: 'ru-RU',    
-    
-    toolBarID: 'mainToolbar',
-    datePickerStartID: 'datePickerStartID',
-    datePickerEndID: 'datePickerEndID',
+    defaultPort: '9000',    
+    webixLocale: 'ru-RU',
     datePickerFormat: '%d.%m.%Y %H:%i:%s',
-    
-    dataListID: 'logDataList',
     dataListColums: [
         { id : "pk_id", header : "#", width : 40, sort : "int", adjust: "data" },
         { id : "time_stamp", header : "Дата и время", adjust: "data", editor:"text" },
@@ -26,36 +18,57 @@ var config = {
         { id : "log_text", header : ["Текст лога", {content:"textFilter"}], fillspace : 3, editor:"text"},
         { id : "log_type", header : ["Тип лога", {content:"selectFilter"}], adjust: "header", editor:"text"},
         { id : "err_code", header : ["код ошибки", {content:"textFilter"}], adjust: "header", editor:"text"},
-    ],
-    
-    btnRequestID: 'btnRequest',
-    btnSqlID: "btnSql",
+    ]
 };
 
-var LogMonitor = function () {    
-    
-    var THIS_NAME = config.moduleName;
-    var THIS_VERSION = config.moduleVer;       
-    this.getThisName = function () { return THIS_NAME; };        
-    this.getThisVersion = function () { return THIS_VERSION; };   
-    
-    this.init = function () {        
-        webix.i18n.setLocale(config.webixLocale);
-        this.views = new Views();
-        webix.ui(this.views.getCompletedDOM());               
-		var dt = new Date();
-		$$(config.datePickerEndID).setValue(dt);
-		dt.setHours(dt.getHours() - 1);
-		$$(config.datePickerStartID).setValue(dt);                
-    };
+var Views = function () {    
+    this.mainToolbarView = {        
+        view : "toolbar",
+        id: 'mainToolbar',
+        cols : [
+            { view : "label", label : config.moduleName, width : 150, align : "left" },
+            { view : "label", label : "с:", width : 30, align : "left" },
+            { 
+                view : "datepicker",
+                id: 'datePickerStartID',
+                format: webix.Date.dateToStr(config.datePickerFormat), 
+                timepicker : true, width : 200, align : "left" 
+            },
+            { view : "label", label : "по:", width : 30, align : "left" },
+            { 
+                view : "datepicker",
+                id: 'datePickerEndID', 
+                format: webix.Date.dateToStr(config.datePickerFormat), 
+                timepicker : true, width : 200, align : "left" 
+            },
+            { view : "button", id : 'btnRequest', value : "сформировать", inputWidth : 180, align: "left" },
+            //{ view : "button", id : 'btnSql', value : "SQL-запрос", inputWidth : 180, align: "right" }
+        ]
+    };    
+    this.mainDatatableView =  {        
+        view : "datatable",
+        id: 'logDataList',
+        resizeColumn: true, select : true, clipboard: true,
+        delimiter:{
+            rows:"\n", // the rows delimiter
+            cols:"|"   // the columns delimiter
+        },
+        scrollX:true, scrollY:true, dragColumn:true, editable:true, editaction:"dblclick",
+        columns : config.dataListColums,		
+    };    
+    this.getDataListID = function () { return 'logDataList'; };    
+    this.getErrView = function (msgType, msgText) {
+        return { type: msgType, width : 'auto', text : msgText }
+    };    
+    this.getCompletedDOM = function () {
+        return { rows : [this.mainToolbarView, this.mainDatatableView] };    
+    };        
 };
 
-var RestApiControler = function (master, host, port) {
-    	
+var RestApiControler = function (master, host, port) {    	
     var ctrl = this;    
     ctrl.host = (host !== undefined) ? host : config.defaultHost;
-    ctrl.port = (port !== undefined) ? port : config.defaultPort;
-        
+    ctrl.port = (port !== undefined) ? port : config.defaultPort;        
     ctrl.get = function(url) {
         return $.ajax({
             type: 'GET',
@@ -72,79 +85,48 @@ var RestApiControler = function (master, host, port) {
 				webix.alert(master.views.getErrView('error', jqXHR.responseText));
             }
         });
-    }; 
-          
+    };           
 };
 
-var Views = function () {    
-    
-    this.mainToolbarView = {        
-        view : "toolbar",
-        id: config.toolBarID,
-        cols : [
-            { view : "label", label : config.moduleName, width : 150, align : "left" },
-            { view : "label", label : "с:", width : 30, align : "left" },
-            { 
-                view : "datepicker",
-                id: config.datePickerStartID,
-                format: webix.Date.dateToStr(config.datePickerFormat), 
-                timepicker : true, width : 200, align : "left" 
-            },
-            { view : "label", label : "по:", width : 30, align : "left" },
-            { 
-                view : "datepicker",
-                id: config.datePickerEndID, 
-                format: webix.Date.dateToStr(config.datePickerFormat), 
-                timepicker : true, width : 200, align : "left" 
-            },
-            { view : "button", id : config.btnRequestID, value : "сформировать", inputWidth : 180, align: "left" },
-            //{ view : "button", id : config.btnSqlID, value : "SQL-запрос", inputWidth : 180, align: "right" }
-        ]
-    };
-    
-    this.mainDatatableView =  {        
-        view : "datatable",
-        id: config.dataListID,
-        resizeColumn: true, select : true, clipboard: true,
-        delimiter:{
-            rows:"\n", // the rows delimiter
-            cols:"|"   // the columns delimiter
-        },
-        scrollX:true, scrollY:true, dragColumn:true, editable:true, editaction:"dblclick",
-        columns : config.dataListColums,		
+var Handler = function (master) {
+    this.btnRequestClick = function () {
+        var dtStart = $$('datePickerStartID').getText();
+        var dtEnd = $$('datePickerEndID').getText();
+        var url = '/logmonitor/getlogs/' + '?dtStart='+ dtStart + '&dtEnd=' + dtEnd;
+        master.restApiCtrl.get(url);
     };    
-    
-    this.getDataListID = function () { return config.dataListID; };
-    
-    this.getErrView = function (msgType, msgText) {
-        return { type: msgType, width : 'auto', text : msgText }
+};
+
+var LogMonitor = function () {    
+    var THIS_NAME = config.moduleName;
+    var THIS_VERSION = config.moduleVer;       
+    this.getThisName = function () { return THIS_NAME; };        
+    this.getThisVersion = function () { return THIS_VERSION; };
+    this.views = new Views();
+    this.restApiCtrl = new RestApiControler(this);
+    this.handler = new Handler(this);
+    this.bildHandlers = function () {
+        $$('btnRequest').attachEvent("onItemClick", this.handler.btnRequestClick);    
     };
-    
-    this.getCompletedDOM = function () {
-        return { rows : [this.mainToolbarView, this.mainDatatableView] };    
-    };
-        
+    this.init = function () {
+        webix.i18n.setLocale(config.webixLocale);    
+        webix.ui(this.views.getCompletedDOM());               
+        var dt = new Date();
+        $$('datePickerEndID').setValue(dt);
+        dt.setHours(dt.getHours() - 1);
+        $$('datePickerStartID').setValue(dt);
+    };    
 };
 
 var lm = new LogMonitor();
-var restApiCtrl = new RestApiControler(lm);
 
 function onDocumentReady () {    
     console.log(lm.getThisName() + ' ver:' + lm.getThisVersion());    
     lm.init();
-    bildHandlers();
+    lm.bildHandlers();
 };
 
-function btnRequestClick () {
-    var dtStart = $$(config.datePickerStartID).getText();
-    var dtEnd = $$(config.datePickerEndID).getText();
-    var url = '/logmonitor/getlogs/' + '?dtStart='+ dtStart + '&dtEnd=' + dtEnd;
-    restApiCtrl.get(url);
-};
-    
-function bildHandlers () {
-    $$(config.btnRequestID).attachEvent("onItemClick", btnRequestClick);    
-};
+
 
 
 

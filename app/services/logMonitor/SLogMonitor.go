@@ -48,12 +48,13 @@ func Config() {
 						app_name, 
 						pkg_name, 
 						module_name, 
-						proc_name, 
+						proc_name,
+						module_line, 
 						log_context, 
 						log_text, 
 						log_type,
 						err_code
-					) VALUES (NOW(), $1, $2, $3, $4, $5, $6, $7, $8);`
+					) VALUES (NOW(), $1, $2, $3, $4, $5, $6, $7, $8, $9);`
 	
 	openDB()
 	defer closeDB()
@@ -74,6 +75,7 @@ func Config() {
 			pkg_name character varying(50),
 			module_name character varying(50),
 			proc_name character varying(50),
+			module_line character varying(50),
 			log_context character varying(100),
 			log_text text,
 			log_type character varying(50),
@@ -119,7 +121,8 @@ func Get(params map[string]interface{}) (data string) {
                     app_name, 
                     pkg_name, 
                     module_name, 
-                    proc_name, 
+                    proc_name,
+					module_line, 
                     log_context, 
                     log_text, 
                     log_type,
@@ -149,7 +152,7 @@ func INFO(logText, logContext, errCode string) {
 	openDB()
 	defer closeDB()
 	query, err := db.Prepare(insertQuery)
-	_, err = query.Exec(getAppName(), getPkgName(), getModuleName(), getFuncName(), logContext, logText, "INFO", "")	
+	_, err = query.Exec(getAppName(), getPkgName(), getModuleName(), getFuncName(), getLine(), logContext, logText, "INFO", "")	
 	checkErr(err)
 }
 
@@ -159,7 +162,7 @@ func TRACE(logText, logContext, errCode string) {
 	openDB()
 	defer closeDB()	
 	query, err := db.Prepare(insertQuery)
-	_, err = query.Exec(getAppName(), getPkgName(), getModuleName(), getFuncName(), logContext, logText, "TRACE", "")	
+	_, err = query.Exec(getAppName(), getPkgName(), getModuleName(), getFuncName(), getLine(), logContext, logText, "TRACE", "")	
 	checkErr(err)
 }
 
@@ -169,7 +172,7 @@ func WARN(logText, logContext, errCode string) {
 	openDB()
 	defer closeDB()	
 	query, err := db.Prepare(insertQuery)
-	_, err = query.Exec(getAppName(), getPkgName(), getModuleName(), getFuncName(), logContext, logText, "WARN", "")	
+	_, err = query.Exec(getAppName(), getPkgName(), getModuleName(), getFuncName(), getLine(), logContext, logText, "WARN", "")	
 	checkErr(err)
 }
 // ERROR ...
@@ -178,7 +181,7 @@ func ERROR(logText, logContext, errCode string) {
 	openDB()
 	defer closeDB()	
 	query, err := db.Prepare(insertQuery)
-	_, err = query.Exec(getAppName(), getPkgName(), getModuleName(), getFuncName(), logContext, logText, "ERROR", errCode)	
+	_, err = query.Exec(getAppName(), getPkgName(), getModuleName(), getFuncName(), getLine(), logContext, logText, "ERROR", errCode)	
 	checkErr(err)
 }
 

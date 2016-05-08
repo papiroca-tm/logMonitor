@@ -14,6 +14,7 @@ var config = {
         { id : "pkg_name", header : ["Пакет", {content:"selectFilter"}], adjust: "data", editor:"text"},
         { id : "module_name", header : ["Модуль", {content:"selectFilter"}], adjust: "data", editor:"text"},
         { id : "proc_name", header : ["функция", {content:"textFilter"}], adjust: "data", editor:"text"},
+        { id : "module_line", header : "строка", adjust: "header", editor:"text"},
         { id : "log_context", header : ["Контекст", {content:"textFilter"}], fillspace : 1, editor:"text"},
         { id : "log_text", header : ["Текст лога", {content:"textFilter"}], fillspace : 3, editor:"text"},
         { id : "log_type", header : ["Тип лога", {content:"selectFilter"}], adjust: "header", editor:"text"},

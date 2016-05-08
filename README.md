@@ -43,10 +43,10 @@ log monitor for golang revel project with webix frontend framework
     	"StackLevel": 2,    
     	"DbDriver": "postgres",
         "DbUser": "postgres",
-        "DbUserPassword": "js110682msm",
+        "DbUserPassword": "password",
         "DbHost": "localhost",
         "DbPort": "5432",
-        "DbName": "workHelper",
+        "DbName": "dbName",
         "DbShema": "logs",
         "DbTable": "logs",
         "Sslmode": "disable"

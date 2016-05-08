@@ -20,12 +20,19 @@ log monitor for golang revel project with webix frontend framework
 необходимо переместить файлы проекта согласно следующей структуре:
 
 **app/controllers/**logMonitor.go
+
 **app/services/logMonitor/**config.json
+
 **app/services/logMonitor/**SLogMonitor.go
+
 **views/LogMonitor/**Header.html
+
 **views/LogMonitor/**Index.html
+
 **public/js/**logMonitor.js
+
 **public/lib/codebase/** - folder with webix framework
+
 
 Прописываем роуты в **conf/routes**
 

@@ -22,51 +22,58 @@ var config = {
     ]
 };
 
-var Views = function () {    
-    this.mainToolbarView = {        
+var Views = function () {
+    this.mainToolbarView = {
+        container: 'mt',        
         view : "toolbar",
-        id: 'mainToolbar',
+        id: 'mainToolbar',        
         cols : [
-            { view : "label", label : config.moduleName, width : 150, align : "left" },
+            { view : "label", label : config.moduleName, width : 150, align : "left" },            
+            {
+                view: "combo",
+                id:"mainMenu",
+                width : 160,
+                value: "Логи", 
+                options: ["Логи", "Статистика"]
+            },            
             { view : "label", label : "с:", width : 30, align : "left" },
             { 
                 view : "datepicker",
                 id: 'datePickerStartID',
                 format: webix.Date.dateToStr(config.datePickerFormat), 
-                timepicker : true, width : 200, align : "left" 
+                timepicker : true, width : 180, align : "left" 
             },
             { view : "label", label : "по:", width : 30, align : "left" },
             { 
                 view : "datepicker",
                 id: 'datePickerEndID', 
                 format: webix.Date.dateToStr(config.datePickerFormat), 
-                timepicker : true, width : 200, align : "left" 
+                timepicker : true, width : 180, align : "left" 
             },
-            { view : "button", id : 'btnRequest', value : "сформировать", inputWidth : 180, align: "left" },
+            { view : "button", id : 'btnRequest', value : "сформировать", inputWidth : 180, align: "left" }
             //{ view : "button", id : 'btnSql', value : "SQL-запрос", inputWidth : 180, align: "right" }
         ]
-    };    
+    }; 
     this.mainDatatableView =  {        
         view : "datatable",
         id: 'logDataList',
+        container: 'content',
+        //autoheight:true,
+        //hidden: true,
         resizeColumn: true, select : true, clipboard: true,
-        delimiter:{
-            rows:"\n", // the rows delimiter
-            cols:"|"   // the columns delimiter
-        },
-        scrollX:true, scrollY:true, dragColumn:true, editable:true, editaction:"dblclick",
+        delimiter:{ rows:"\n", cols:"|" },
+        scrollX: false, scrollY: true,
+        //dragColumn:true, 
+        editable:true, editaction:"dblclick",
         columns : config.dataListColums,		
     };    
     this.getDataListID = function () { return 'logDataList'; };    
     this.getErrView = function (msgType, msgText) {
         return { type: msgType, width : 'auto', text : msgText }
-    };    
-    this.getCompletedDOM = function () {
-        return { rows : [this.mainToolbarView, this.mainDatatableView] };    
     };        
 };
 
-var RestApiControler = function (master, host, port) {    	
+var RestApiControler = function (master, host, port) {       	
     var ctrl = this;    
     ctrl.host = (host !== undefined) ? host : config.defaultHost;
     ctrl.port = (port !== undefined) ? port : config.defaultPort;        
@@ -79,9 +86,13 @@ var RestApiControler = function (master, host, port) {
             success: function (data, textStatus, jqXHR) {
                 var dataList = master.views.getDataListID();
                 $$(dataList).clearAll();
-                $$(dataList).parse(data);                
+                $$(dataList).parse(data);
+                $$(dataList).refresh();
+                $('#content').height($(window).height() - ($('#mt').height() + 10));
+                $$(dataList).adjust();              
             },
             error: function (jqXHR, textStatus, errorThown) {
+                console.log('error'); 
                 console.error(jqXHR);
 				webix.alert(master.views.getErrView('error', jqXHR.responseText));
             }
@@ -94,11 +105,24 @@ var Handler = function (master) {
         var dtStart = $$('datePickerStartID').getText();
         var dtEnd = $$('datePickerEndID').getText();
         var url = '/logmonitor/getlogs/' + '?dtStart='+ dtStart + '&dtEnd=' + dtEnd;
+        console.log(url);
         master.restApiCtrl.get(url);
-    };    
+    };
+    this.menuOnChange = function (newv, oldv) {
+        console.log(newv);                    
+        switch (newv) {
+            case 'Логи':                
+                $$('logDataList').show();
+                break
+            case 'Статистика':
+                $$('logDataList').hide();
+                break
+        }
+    };
 };
 
-var LogMonitor = function () {    
+var LogMonitor = function () {
+    var self = this;   
     var THIS_NAME = config.moduleName;
     var THIS_VERSION = config.moduleVer;       
     this.getThisName = function () { return THIS_NAME; };        
@@ -107,11 +131,15 @@ var LogMonitor = function () {
     this.restApiCtrl = new RestApiControler(this);
     this.handler = new Handler(this);
     this.bildHandlers = function () {
-        $$('btnRequest').attachEvent("onItemClick", this.handler.btnRequestClick);    
+        $$('btnRequest').attachEvent("onItemClick", self.handler.btnRequestClick);
+        $$('mainMenu').attachEvent("onChange", function(newv, oldv){
+            self.handler.menuOnChange(newv, oldv)
+        });
     };
     this.init = function () {
-        webix.i18n.setLocale(config.webixLocale);    
-        webix.ui(this.views.getCompletedDOM());               
+        webix.i18n.setLocale(config.webixLocale);
+        webix.ui(this.views.mainToolbarView);
+        webix.ui( this.views.mainDatatableView );             
         var dt = new Date();
         $$('datePickerEndID').setValue(dt);
         dt.setHours(dt.getHours() - 1);

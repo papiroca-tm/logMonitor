@@ -1,6 +1,7 @@
 #logMonitor
 log monitor for golang revel project with webix frontend framework
 ### todo list:
+- сделать отдельные инпуты под выбор времени
 - статистика в виде диаграмм:
  - по программе
  - по модулю

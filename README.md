@@ -57,7 +57,7 @@ log monitor for golang revel project with webix frontend framework
 
 	import (
 		"github.com/revel/revel"
-		logit "logMonitor/app/services/logMonitor"
+		logit "appName/app/services/logMonitor"
 	)
 	
     func (c SomeController) Action() revel.Result {		
